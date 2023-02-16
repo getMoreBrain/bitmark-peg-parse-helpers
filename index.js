@@ -1,6 +1,6 @@
 const
     parser = require('./peg-parser');
 
-exports.parse = function (input) {
-    return parser.parse(input);
+exports.parse = function (input, options) {
+    return parser.parse(input, options);
 };
