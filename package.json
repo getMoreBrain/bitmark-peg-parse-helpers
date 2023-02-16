@@ -9,6 +9,7 @@
   },
   "scripts": {
     "peggy": "peggy --extra-options-file=./pegconfig.json -o bitmark-peg-parser.js bitmark-grammar.pegjs",
+    "publish-version": "npm version patch && npm publish"
   },
   "repository": {
     "type": "git",
