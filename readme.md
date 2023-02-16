@@ -9,7 +9,7 @@ Access the npm package https://github.com/getMoreBrain/bitmark-peg-parse-helpers
 ## Release a new version
 1. (_Optional_): Make changes the the **grammar.pegjs** file
 2. Parse the grammar by running: ```npm run peggy ```
-3. Publish the changes to GitHub npm: ```npm run peggy``
+3. Publish the changes to GitHub npm: ```npm run peggy```
 
 # Misc
 ## TODO:
