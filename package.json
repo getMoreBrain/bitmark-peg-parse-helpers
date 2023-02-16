@@ -4,7 +4,8 @@
   "description": "",
   "main": "peg-parser.js",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com",
+    "scope": "@getMoreBrain"
   },
   "scripts": {
     "peggy": "peggy --extra-options-file=./pegconfig.json -o bitmark-peg-parser.js bitmark-grammar.pegjs"
