@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/getMoreBrain/bitmark-peg-parse-helpers/issues"
   },
-  "homepage": "https://github.com/getMoreBrain/bitmark-peg-parse-helpers#readme"
+  "homepage": "https://github.com/getMoreBrain/bitmark-peg-parse-helpers#readme",
+  "devDependencies": {
+    "peggy": "^2.0.1"
+  }
 }
