@@ -1,5 +1,5 @@
 {
-  "name": "bitmark-peg-parse-helpers",
+  "name": "@getMoreBrain/bitmark-peg-parse-helpers",
   "version": "1.0.1",
   "description": "",
   "main": "peg-parser.js",
