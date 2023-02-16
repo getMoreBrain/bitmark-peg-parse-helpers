@@ -2,7 +2,10 @@
   "name": "bitmark-peg-parse-helpers",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "peg-parser.js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "peggy": "peggy --extra-options-file=./pegconfig.json -o bitmark-peg-parser.js bitmark-grammar.pegjs"
   },
