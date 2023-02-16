@@ -1,0 +1,19 @@
+{
+  "name": "bitmark-peg-parse-helpers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "peggy": "peggy --extra-options-file=./pegconfig.json -o bitmark-peg-parser.js bitmark-grammar.pegjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getMoreBrain/bitmark-peg-parse-helpers.git"
+  },
+  "author": "Stefan Szasz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/getMoreBrain/bitmark-peg-parse-helpers/issues"
+  },
+  "homepage": "https://github.com/getMoreBrain/bitmark-peg-parse-helpers#readme"
+}
