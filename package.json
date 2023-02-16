@@ -2,7 +2,7 @@
   "name": "@getMoreBrain/bitmark-peg-parse-helpers",
   "version": "1.0.1",
   "description": "",
-  "main": "peg-parser.js",
+  "main": "index.js",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "scope": "@getMoreBrain"
