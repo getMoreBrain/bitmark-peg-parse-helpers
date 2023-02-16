@@ -8,7 +8,7 @@
     "scope": "@getMoreBrain"
   },
   "scripts": {
-    "peggy": "peggy --extra-options-file=./pegconfig.json -o bitmark-peg-parser.js bitmark-grammar.pegjs",
+    "peggy": "peggy --extra-options-file=./pegconfig.json -o peg-parser.js grammar.pegjs",
     "publish-version": "npm version patch && npm publish"
   },
   "repository": {
