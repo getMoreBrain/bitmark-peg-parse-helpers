@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: 18
           registry-url: https://npm.pkg.github.com/
+      - name: Configure git
+        run: git config --global user.email "gmb-github-bot-actions@github.com" && git config --global user.name "GitHub Actions"
       - run: npm run publish-version
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
