@@ -1,5 +1,5 @@
 // bitmark Text parser
-// v7.4.2
+// v7.4.4
 
 //Parser peggy.js
 
@@ -101,19 +101,32 @@ function unbreakscape(_str) {
 
 function bitmarkPlusPlus(_str) {
 
-   // embedded in Get More Brain
-   return peg$parse(_str, { startRule: "bitmarkPlusPlus" })
+  if (parser) {
+  	return parser.parse(_str, { startRule: "bitmarkPlusPlus" })
+  } else {
+    // embedded in Get More Brain
+    return parse(_str, { startRule: "bitmarkPlusPlus" })
+  }
 }
 
 function bitmarkPlus(_str) {
 
-    return peg$parse(_str, { startRule: "bitmarkPlus" })
+  if (parser) {
+  	return parser.parse(_str, { startRule: "bitmarkPlus" })
+  } else {
+    // embedded in Get More Brain
+    return parse(_str, { startRule: "bitmarkPlus" })
+  }
 }
 
 function bitmarkMinusMinus(_str) {
 
+  if (parser) {
+  	return parser.parse(_str, { startRule: "bitmarkMinusMinus" })
+  } else {
     // embedded in Get More Brain
-    return peg$parse(_str, { startRule: "bitmarkMinusMinus" })
+    return parse(_str, { startRule: "bitmarkMinusMinus" })
+  }
 }
 
 }}
@@ -315,7 +328,7 @@ BulletListLine
     }
 
 ListLine
-  = !BlankLine SAMEDENT !ListTags ll: $(( !NL . )* NL) { return ll }
+  = !BlankLine SAMEDENT !ListTags ll: $(( !NL . )+ EOL) { return ll }
 
 BlankLine
   = [ \t]* NL
@@ -408,7 +421,7 @@ InlineTags
 
 InlinePlainText
   = NL { return { text: "\n", type: "text" } }
-  / t: $((InlineTagTags? !InlineStyledText .)+) { return { text: unbreakscape(t), type: "text" } } // remove breakscaping tags in body
+  / t: $(((InlineTagTags? !InlineStyledText .) / (InlineTagTags !InlineStyledText))+) { return { text: unbreakscape(t), type: "text" } } // remove breakscaping tags in body
 
 
 InlineHalfTag = '='
