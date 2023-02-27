@@ -100,33 +100,15 @@ function unbreakscape(_str) {
 }
 
 function bitmarkPlusPlus(_str) {
-
-  if (parser) {
-  	return parser.parse(_str, { startRule: "bitmarkPlusPlus" })
-  } else {
-    // embedded in Get More Brain
-    return parse(_str, { startRule: "bitmarkPlusPlus" })
-  }
+    return peg$parse(_str, { startRule: "bitmarkPlusPlus" })
 }
 
 function bitmarkPlus(_str) {
-
-  if (parser) {
-  	return parser.parse(_str, { startRule: "bitmarkPlus" })
-  } else {
-    // embedded in Get More Brain
-    return parse(_str, { startRule: "bitmarkPlus" })
-  }
+    return peg$parse(_str, { startRule: "bitmarkPlus" })
 }
 
 function bitmarkMinusMinus(_str) {
-
-  if (parser) {
-  	return parser.parse(_str, { startRule: "bitmarkMinusMinus" })
-  } else {
-    // embedded in Get More Brain
-    return parse(_str, { startRule: "bitmarkMinusMinus" })
-  }
+    return peg$parse(_str, { startRule: "bitmarkMinusMinus" })
 }
 
 }}
