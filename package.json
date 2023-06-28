@@ -9,6 +9,7 @@
   },
   "scripts": {
     "peggy": "peggy --extra-options-file=./pegconfig.json -o peg-parser.js grammar.pegjs",
+    "test": "mocha --recursive ./test",
     "publish-version": "npm version patch && npm publish"
   },
   "repository": {
@@ -22,6 +23,7 @@
   },
   "homepage": "https://github.com/getMoreBrain/bitmark-peg-parse-helpers#readme",
   "devDependencies": {
+    "mocha": "^10.2.0",
     "peggy": "^2.0.1"
   }
 }

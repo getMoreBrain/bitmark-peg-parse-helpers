@@ -1,26 +1,26 @@
 // bitmark Text parser
-// v7.4.4
+// v8.0.11
 
 //Parser peggy.js
 
 // parser options (parameter when running parser):
-// allowedStartRules: ["bitmarkPlusPlus", "bitmarkPlus", "bitmarkMinusMinus"]
+// allowedStartRules: ["bitmarkPlusPlus", "bitmarkPlus", "bitmarkMinusMinus", "bitmarkPlusString", "bitmarkMinusMinusString"]
+
+// The start rules ending in "String" are for internal use only.
+// The public rules return a full StyledText object. This means things got consitent to handle. However, this means, there is always at least one block (a paragraph in case of bitmark+ and bitmark--) present.
 
 // Todos
 
-// - finalize inline code, codeBlock
-//      - JSON of colored code extension
-//      - lang case (caMel, lower?? > enforce)
-//      - default for undefined language
 // - JSON for color
 // - JSON for pure marked text ==aaa== (no attributes)
+// - Are empty attrs
 
 // not sure
 
 // - LaTeX embed ?
-// - inline user comment // == Notiztext ==|user-note:@gaba| ?
 
 /*
+
 Empty StyledString
 
 [{ "type": "text", "text": "" }] // NOK - TipTap Error
@@ -36,10 +36,6 @@ Empty StyledText
 */
 
 /*
-
-|note
-
-|note: Title
 
 # Hallo
 
@@ -75,11 +71,18 @@ let b = 4
 
 let c = a + b
 
+|^code: js
+
+
 |
 
 Das war's
 
  */
+
+
+
+
 
 // global initializer
 // global utility functions
@@ -93,22 +96,45 @@ function s(_string) {
 function unbreakscape(_str) {
 	let u_ = _str || ""
 
-  let re_ = new RegExp( /([*_`!])\^(?!\^)/, "g")
-  u_ = u_.replace(re_, "$1")
+	function replacer(match, p1, offset, string, groups) {
+  		return match.replace("^", "");
+	}
+
+  let re_ = new RegExp( /=\^(\^*)(?==)|\*\^(\^*)(?=\*)|_\^(\^*)(?=_)|`\^(\^*)(?=`)|!\^(\^*)(?=!)|\[\^(\^*)|\|\^(\^*)/, "g") // RegExp( /([\[*_`!])\^(?!\^)/, "g")
+
+  u_ = u_.replace(re_, replacer)
 
   return u_
 }
 
 function bitmarkPlusPlus(_str) {
-    return peg$parse(_str, { startRule: "bitmarkPlusPlus" })
+
+  if (parser) {
+  	return parser.parse(_str, { startRule: "bitmarkPlusPlus" })
+  } else {
+    // embedded in Get More Brain
+    return parse(_str, { startRule: "bitmarkPlusPlus" })
+  }
 }
 
-function bitmarkPlus(_str) {
-    return peg$parse(_str, { startRule: "bitmarkPlus" })
+function bitmarkPlusString(_str) {
+
+  if (parser) {
+  	return parser.parse(_str, { startRule: "bitmarkPlusString" })
+  } else {
+    // embedded in Get More Brain
+    return parse(_str, { startRule: "bitmarkPlusString" })
+  }
 }
 
-function bitmarkMinusMinus(_str) {
-    return peg$parse(_str, { startRule: "bitmarkMinusMinus" })
+function bitmarkMinusMinusString(_str) {
+
+  if (parser) {
+  	return parser.parse(_str, { startRule: "bitmarkMinusMinusString" })
+  } else {
+    // embedded in Get More Brain
+    return parse(_str, { startRule: "bitmarkMinusMinusString" })
+  }
 }
 
 }}
@@ -117,7 +143,6 @@ function bitmarkMinusMinus(_str) {
 //   instance variables
 
 {
-    let section = ""
     var indentStack = [], indent = ""
 
     input = input.trimStart()
@@ -143,7 +168,6 @@ Block
   / b: ListBlock { return { ...b }}
   / b: ImageBlock { return { ...b }}
   / b: CodeBlock { return { ...b }}
-  / b: Section { return { ...b }}
   / b: Paragraph { return { ...b }}
 
 
@@ -152,37 +176,14 @@ BlockStartTags
   / ListTags
   / ImageTag
   / CodeTag
-  / SectionTag
 
 BlockTag = '|'
 
 NoContent
     = '' { return [] }
 
-
-// Sections
-
-SectionTag
-  = BlockTag t: SectionType { return t }
-
-Section
-  = t: SectionTag h: Heading $([ \t]* EOL) NL? { section = t; return { type: "section", section: t, ...(0 != h.length && { content: h }) } }
-  / BlockTag garbage: $(char+ EOL) { return { type: "error", msg: 'Unknown section type.', found: garbage }}
-
-SectionType
-  = 'note'
-  / 'remark'
-  / 'info'
-  / 'hint'
-  / 'help'
-  / 'warning'
-  / 'danger'
-  / 'example'
-  / 'side-note'
-  / ''
-
 Heading
-  = ':' h: $(char*) { return bitmarkMinusMinus(h.trim()) }
+  = ':' h: $(char*) { return bitmarkMinusMinusString(h.trim()) }
   / '' { return [] }
 
 
@@ -190,11 +191,12 @@ Heading
 // Title Block
 
 TitleTags
-  = '## '
+  = '### '
+  / '## '
   / '# '
 
 TitleBlock
-  = h: TitleTags t: $char* EOL  NL? { return { type: "heading", content: bitmarkMinusMinus(t), attrs: { level: h.length - 1, section } } }
+  = h: TitleTags t: $char* EOL  NL? { return { type: "heading", content: bitmarkMinusMinusString(t), attrs: { level: h.length - 1 } } }
 
 
 
@@ -211,14 +213,14 @@ CodeBlock
   = h: CodeHeader b: CodeBody { return { ...h, content: b }}
 
 CodeHeader
-  = CodeTag $([ \t]* EOL) { return { type: "codeBlock", codeLanguage: "", section }}
-  / CodeTag ':' l: CodeLanguage $([ \t]* EOL) { return { type: "codeBlock", attrs: {language: l.trim(), section } }}
+  = CodeTag $([ \t]* EOL) { return { type: "codeBlock", language: "" }}
+  / CodeTag ':' l: CodeLanguage $([ \t]* EOL) { return { type: "codeBlock", attrs: { language: l.trim().toLowerCase() } }}
 
 CodeLanguage
   = 'bitmark++'
   / 'bitmark--'
   / 'JavaScript'
-  / $([a-zA-Z0-8 +!.#//*éö@:π-′]+)
+  / $(char+)
   / ''
 
  // https://en.wikipedia.org/wiki/List_of_programming_languages
@@ -245,9 +247,9 @@ ListTags
   / TaskListTag
 
 ListBlock
-  = c: BulletListContainer bl: BulletListLine+ NL? { return { ...c, content: bl, attrs: { section } } }
-  / c: OrderedListContainer bl: BulletListLine+ NL? { return { ...c, content: bl, attrs: { section } } }
-  / c: TaskListContainer bl: BulletListLine+ NL? { return { ...c, content: bl, attrs: { section } } }
+  = c: BulletListContainer bl: BulletListLine+ NL? { return { ...c, content: bl, attrs: { } } }
+  / c: OrderedListContainer bl: BulletListLine+ NL? { return { ...c, content: bl, attrs: { } } }
+  / c: TaskListContainer bl: BulletListLine+ NL? { return { ...c, content: bl, attrs: { } } }
 
 BulletListContainer = &BulletListTag { return { type: "bulletList" } }
 OrderedListContainer = &OrderedListTag { return { type: "orderedList" } }
@@ -258,8 +260,6 @@ BulletListLine
     lines: ListLine*
     children: ( INDENT c: BulletListLine* DEDENT { return c })?
     {
-
-      if (null === section) section = "";
 
       let parent = 'bulletList'
       if ('•1 ' == lt) {
@@ -273,8 +273,8 @@ BulletListLine
 
       let item = {
       	type: "paragraph",
-		    attrs: { section },
-      	content: bitmarkPlus(li)
+		    attrs: { },
+      	content: bitmarkPlusString(li)
       }
 
 	    let content = [item]
@@ -282,7 +282,7 @@ BulletListLine
       if (children && children[0] && children[0].parent) {
         let sublist = {
           type: children[0].parent,
-          attrs: { start: 1, section },
+          attrs: { start: 1 },
           content: children,
           parent: ""
         }
@@ -313,14 +313,14 @@ ListLine
   = !BlankLine SAMEDENT !ListTags ll: $(( !NL . )+ EOL) { return ll }
 
 BlankLine
-  = [ \t]* NL
+  = [ \t] * NL
 
 
 SAMEDENT
-  = i: '\t'* &{ return i.join("") === indent }
+  = i: '\t' * &{ return i.join("") === indent }
 
 INDENT
-  = &( i: '\t'+ &{ return i.length > indent.length }
+  = &( i: '\t' + &{ return i.length > indent.length }
       { indentStack.push(indent); indent = i.join("")})
 
 DEDENT
@@ -332,7 +332,7 @@ DEDENT
 // Paragraph (Block)
 
 Paragraph
-   = !BlockStartTags body: ParagraphBody { return { type: "paragraph", content: bitmarkPlus(body.trim()), attrs: { section } } }
+   = !BlockStartTags body: ParagraphBody { return { type: "paragraph", content: bitmarkPlusString(body.trim()), attrs: { } } }
 
 ParagraphBody
   = $(ParagraphLine+)
@@ -370,8 +370,7 @@ ImageBlock
         alt: alt_,
         title: title_,
         class: class_,
-        ...chain,
-        section
+        ...chain
       }
     }
 
@@ -383,7 +382,7 @@ MediaChain
   = ch: MediaChainItem* { return ch }
 
 MediaChainItem
-  = '#' str: $((!BlockTag char)*) BlockTag {return { comment: str }}
+  = '#' str: $((!BlockTag char)*) BlockTag {return { type: "comment", comment: str }}
   / '@'? p: MediaNumberTags ':' ' '* v: $( (!BlockTag [0-9])+) BlockTag { return { [p]: parseInt(v) } }
   / '@'? p: MediaNumberTags ':' ' '* v: $((!BlockTag char)*) BlockTag { return { type: "error", msg: p + ' must be an positive integer.', found: v }}
   / '@'? p: $((!(BlockTag / ':') char)*) ':' ' '? v: $((!BlockTag char)*) BlockTag { return { [p]: v } }
@@ -393,9 +392,17 @@ MediaNumberTags
   = 'width' / 'height'
 
 
-// StyledString
 
-bitmarkPlus "StyledString"
+
+
+
+
+// bitmark+
+
+bitmarkPlus "StyledText"
+  = bs: InlineTags { return [ { type: 'paragraph', content: bs, attrs: { } } ] }
+
+bitmarkPlusString "StyledString"
   = InlineTags
 
 InlineTags
@@ -438,10 +445,10 @@ AttrChainItem
   = 'link:' str: $((!BlockTag char)*) BlockTag {return { type: 'link', attrs: { href: str.trim(), target: '_blank' } }}
   / 'var:' str: $((!BlockTag char)*) BlockTag {return { type: 'var', attrs: { name: str.trim() } }}
   / 'code' BlockTag {return { type: 'code', attrs: { language: "plain text" } }}
-  / 'code:' lang: $((!BlockTag char)*) BlockTag {return { type: 'code', attrs: { language: lang.trim() } }}
+  / 'code:' lang: $((!BlockTag char)*) BlockTag {return { type: 'code', attrs: { language: lang.trim().toLowerCase() } }}
   / 'color:' color: Color BlockTag {return { type: 'color', attrs: { color } }}
   / style: AlternativeStyleTags BlockTag {return { type: style }}
-  / '#' str: $((!BlockTag char)*) BlockTag {return { comment: str }}
+  / '#' str: $((!BlockTag char)*) BlockTag {return { type: "comment", comment: str }}
  // / p: $((!(BlockTag / ':') word)*) ':' ' '? v: $((!BlockTag char)*) BlockTag { return { [p]: v } }
  // / p: $((!BlockTag word)*) BlockTag {return { [p]: true } }
 
@@ -481,9 +488,18 @@ Color
   / 'white'
   / 'yellow'
 
+
+
+
+
+
+
 // bitmark--
 
-bitmarkMinusMinus "MinmialStyledString"
+bitmarkMinusMinus "MinimalStyledText"
+  = bs: bitmarkMinusMinusString { return [ { type: 'paragraph', content: bs, attrs: { } } ] }
+
+bitmarkMinusMinusString "MinimalStyledString"
   = first: PlainText? more: (StyledText / PlainText)*  { return first ? [first, ...more.flat()] : more.flat() }
 
 PlainText
