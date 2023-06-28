@@ -11,8 +11,8 @@ jobs:
         with:
           node-version: 18
       - run: npm ci
-      - run: npm run test
       - run: npm run peggy
+      - run: npm run test
 
   publish-gpr:
     needs: build
