@@ -2,6 +2,8 @@
     "allowedStartRules": [
       "bitmarkPlus",
       "bitmarkPlusPlus",
-      "bitmarkMinusMinus"
+      "bitmarkMinusMinus",
+      "bitmarkPlusString",
+      "bitmarkMinusMinusString"
     ]
   }

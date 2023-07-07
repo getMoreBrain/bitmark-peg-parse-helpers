@@ -109,32 +109,32 @@ function unbreakscape(_str) {
 
 function bitmarkPlusPlus(_str) {
 
-  if (parser) {
-  	return parser.parse(_str, { startRule: "bitmarkPlusPlus" })
-  } else {
+//  if (parser) {
+//  	return parser.parse(_str, { startRule: "bitmarkPlusPlus" })
+//  } else {
     // embedded in Get More Brain
-    return parse(_str, { startRule: "bitmarkPlusPlus" })
-  }
+    return peg$parse(_str, { startRule: "bitmarkPlusPlus" })
+//  }
 }
 
 function bitmarkPlusString(_str) {
 
-  if (parser) {
-  	return parser.parse(_str, { startRule: "bitmarkPlusString" })
-  } else {
+//  if (parser) {
+//  	return parser.parse(_str, { startRule: "bitmarkPlusString" })
+//  } else {
     // embedded in Get More Brain
-    return parse(_str, { startRule: "bitmarkPlusString" })
-  }
+    return peg$parse(_str, { startRule: "bitmarkPlusString" })
+//  }
 }
 
 function bitmarkMinusMinusString(_str) {
 
-  if (parser) {
-  	return parser.parse(_str, { startRule: "bitmarkMinusMinusString" })
-  } else {
+//  if (parser) {
+//  	return parser.parse(_str, { startRule: "bitmarkMinusMinusString" })
+//  } else {
     // embedded in Get More Brain
     return parse(_str, { startRule: "bitmarkMinusMinusString" })
-  }
+//  }
 }
 
 }}
