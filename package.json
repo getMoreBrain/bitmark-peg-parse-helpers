@@ -1,6 +1,6 @@
 {
   "name": "@getMoreBrain/bitmark-peg-parse-helpers",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "",
   "main": "index.js",
   "publishConfig": {
