@@ -1,5 +1,5 @@
 // bitmark Text parser
-// v8.0.11
+// v8.3.0
 
 //Parser peggy.js
 
@@ -7,7 +7,7 @@
 // allowedStartRules: ["bitmarkPlusPlus", "bitmarkPlus", "bitmarkMinusMinus", "bitmarkPlusString", "bitmarkMinusMinusString"]
 
 // The start rules ending in "String" are for internal use only.
-// The public rules return a full StyledText object. This means things got consitent to handle. However, this means, there is always at least one block (a paragraph in case of bitmark+ and bitmark--) present.
+// The public rules return a full StyledText object. This means things got consitent to handle. However, this means, there is always at least one block (a paragraph in case of bitmark+ and bitmark--) present. 
 
 // Todos
 
@@ -100,8 +100,8 @@ function unbreakscape(_str) {
   		return match.replace("^", "");
 	}
 
-  let re_ = new RegExp( /=\^(\^*)(?==)|\*\^(\^*)(?=\*)|_\^(\^*)(?=_)|`\^(\^*)(?=`)|!\^(\^*)(?=!)|\[\^(\^*)|\|\^(\^*)/, "g") // RegExp( /([\[*_`!])\^(?!\^)/, "g")
-
+  let re_ = new RegExp( /=\^(\^*)(?==)|\*\^(\^*)(?=\*)|_\^(\^*)(?=_)|`\^(\^*)(?=`)|!\^(\^*)(?=!)|\[\^(\^*)|•\^(\^*)|#\^(\^*)|\|\^(\^*)|\|\^(\^*)/, "g") // RegExp( /([\[*_`!])\^(?!\^)/, "g")
+  
   u_ = u_.replace(re_, replacer)
 
   return u_
@@ -133,7 +133,7 @@ function bitmarkMinusMinusString(_str) {
 //  	return parser.parse(_str, { startRule: "bitmarkMinusMinusString" })
 //  } else {
     // embedded in Get More Brain
-    return parse(_str, { startRule: "bitmarkMinusMinusString" })
+    return peg$parse(_str, { startRule: "bitmarkMinusMinusString" })
 //  }
 }
 
@@ -176,6 +176,15 @@ BlockStartTags
   / ListTags
   / ImageTag
   / CodeTag
+  / ParagraphTag
+  
+  
+BlockStart
+  = TitleTags
+  / ListTags
+  / ImageBlock
+  / CodeHeader
+  / ExplicitParagraphHeader
 
 BlockTag = '|'
 
@@ -220,7 +229,7 @@ CodeLanguage
   = 'bitmark++'
   / 'bitmark--'
   / 'JavaScript'
-  / $(char+)
+  / $(char+) 
   / ''
 
  // https://en.wikipedia.org/wiki/List_of_programming_languages
@@ -228,10 +237,10 @@ CodeLanguage
  // https://en.wikipedia.org/wiki/List_of_document_markup_languages
 
 CodeBody
-  = c: $(CodeLine*) { return [{ type: "text", text: c.trim()}] }
+  = c: $(CodeLine*) { return [{ type: "text", text: unbreakscape(c.trim())}] }
 
 CodeLine
-  = !BlockStartTags t: $(char+ EOL)  { return t }
+  = !BlockStart t: $(char+ EOL)  { return t }
   / NL
 
 
@@ -331,16 +340,23 @@ DEDENT
 
 // Paragraph (Block)
 
+ParagraphTag
+  = BlockTag
+
 Paragraph
-   = !BlockStartTags body: ParagraphBody { return { type: "paragraph", content: bitmarkPlusString(body.trim()), attrs: { } } }
+   = !BlockStart body: ParagraphBody { return { type: "paragraph", content: bitmarkPlusString(body.trim()), attrs: { } } }
+   / ExplicitParagraphHeader body: ParagraphBody { return { type: "paragraph", content: bitmarkPlusString(body.trim()), attrs: { } } }
+   / ExplicitParagraphHeader body: '' { return { type: "paragraph", content: bitmarkPlusString(body.trim()), attrs: { } } }
 
 ParagraphBody
   = $(ParagraphLine+)
 
 ParagraphLine
-  = !BlockStartTags t: $(char+ EOL)
+  = !BlockStart t: $(char+ EOL)
   / t: NL
 
+ExplicitParagraphHeader
+  = ParagraphTag $([ \t]* EOL) NL?
 
 
 // Image Block
@@ -382,7 +398,7 @@ MediaChain
   = ch: MediaChainItem* { return ch }
 
 MediaChainItem
-  = '#' str: $((!BlockTag char)*) BlockTag {return { type: "comment", comment: str }}
+  = '#' str: $((!BlockTag char)*) BlockTag {return { comment: str }}
   / '@'? p: MediaNumberTags ':' ' '* v: $( (!BlockTag [0-9])+) BlockTag { return { [p]: parseInt(v) } }
   / '@'? p: MediaNumberTags ':' ' '* v: $((!BlockTag char)*) BlockTag { return { type: "error", msg: p + ' must be an positive integer.', found: v }}
   / '@'? p: $((!(BlockTag / ':') char)*) ':' ' '? v: $((!BlockTag char)*) BlockTag { return { [p]: v } }
@@ -400,7 +416,7 @@ MediaNumberTags
 // bitmark+
 
 bitmarkPlus "StyledText"
-  = bs: InlineTags { return [ { type: 'paragraph', content: bs, attrs: { } } ] }
+  = bs: InlineTags { return [ { type: 'paragraph', content: bs, attrs: { } } ] } 
 
 bitmarkPlusString "StyledString"
   = InlineTags
@@ -409,7 +425,7 @@ InlineTags
   = first: InlinePlainText? more: (InlineStyledText / InlinePlainText)*  { return first ? [first, ...more.flat()] : more.flat() }
 
 InlinePlainText
-  = NL { return { text: "\n", type: "text" } }
+  = NL { return { "type": "hardBreak" } }
   / t: $(((InlineTagTags? !InlineStyledText .) / (InlineTagTags !InlineStyledText))+) { return { text: unbreakscape(t), type: "text" } } // remove breakscaping tags in body
 
 
@@ -497,7 +513,7 @@ Color
 // bitmark--
 
 bitmarkMinusMinus "MinimalStyledText"
-  = bs: bitmarkMinusMinusString { return [ { type: 'paragraph', content: bs, attrs: { } } ] }
+  = bs: bitmarkMinusMinusString { return [ { type: 'paragraph', content: bs, attrs: { } } ] } 
 
 bitmarkMinusMinusString "MinimalStyledString"
   = first: PlainText? more: (StyledText / PlainText)*  { return first ? [first, ...more.flat()] : more.flat() }
